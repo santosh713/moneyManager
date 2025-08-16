@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Money Manager</title>
+  <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+  <style>
+    :root{
+      --bg:#0c1020;--panel:#121735;--border:#25306b;--text:#e9ecff;--muted:#b9c1ff;
+      --brand1:#7c3aed;--brand2:#06b6d4;--good:#22c55e;--bad:#ff6b6b;
+      --chip1:#f97316;--chip2:#10b981;--chip3:#eab308;--chip4:#3b82f6;--chip5:#ef4444;--chip6:#8b5cf6;--chip7:#14b8a6;--chip8:#f59e0b;--chip9:#84cc16;--chip10:#06b6d4;--chip11:#e11d48
+    }
+    *{box-sizing:border-box}
+    html,body{height:100%}
+    body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,Cantarell,Inter,Arial;letter-spacing:.2px;color:var(--text);background:radial-gradient(1200px 800px at 10% -10%, #1b2a7a33, transparent), radial-gradient(1200px 800px at 110% 110%, #0284c733, transparent), var(--bg)}
+    .container{max-width:1200px;margin:0 auto;padding:24px}
+    .header{display:flex;justify-content:space-between;align-items:center;margin-bottom:18px}
+    .brand{display:flex;align-items:center;gap:12px}
+    .badge{height:40px;width:40px;border-radius:14px;background:linear-gradient(135deg,var(--brand1),var(--brand2));display:flex;align-items:center;justify-content:center;box-shadow:0 8px 30px #0006}
+    .title{font-weight:900;font-size:22px}
+    .muted{color:var(--muted);font-size:12px}
+    .tabs{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;background:#0f1430;border:1px solid var(--border);padding:6px;border-radius:16px}
+    .tab{appearance:none;border:0;border-radius:12px;padding:10px 12px;background:transparent;color:var(--muted);cursor:pointer;transition:.2s}
+    .tab:hover{background:#0e1340}
+    .tab.active{background:linear-gradient(135deg,#1d254f,#19214a);color:#fff}
+    .grid{display:grid;gap:14px}
+    @media (min-width:768px){.grid-3{grid-template-columns:repeat(3,1fr)}.grid-2{grid-template-columns:repeat(2,1fr)}}
+    .card{background:linear-gradient(180deg,#121735,#0f1430);border:1px solid var(--border);border-radius:16px;box-shadow:0 10px 30px #0005}
+    .card-header{padding:14px 16px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center}
+    .card-header h3{margin:0;font-size:14px;font-weight:800;letter-spacing:.3px}
+    .card-content{padding:16px}
+    .kv{display:flex;justify-content:space-between;align-items:center;margin:6px 0}
+    .value{font-weight:800}
+    .good{color:var(--good)}.bad{color:var(--bad)}
+    .chip{display:inline-flex;align-items:center;gap:8px;padding:8px 10px;border-radius:12px;background:#0f1430;border:1px solid var(--border);font-size:12px}
+    .chip input,.chip select{background:#0a0f2c;color:var(--text);border:1px solid var(--border);border-radius:8px;padding:6px 8px}
+    .chip button{background:linear-gradient(135deg,var(--brand1),var(--brand2));border:0;color:#fff;border-radius:10px;padding:8px 10px;cursor:pointer}
+    .btn{appearance:none;border:0;border-radius:12px;background:#1d2755;color:#fff;padding:8px 12px;cursor:pointer}
+    .btn:hover{filter:brightness(1.1)}
+    .btn-ghost{background:transparent;color:var(--muted)}
+    .table-wrap{overflow:auto}
+    table{width:100%;border-collapse:collapse;font-size:14px}
+    th,td{border-top:1px solid var(--border);padding:10px;text-align:left}
+    th{color:var(--muted);font-weight:700}
+    input,select{width:100%;background:#0a0f2c;color:var(--text);border:1px solid var(--border);border-radius:8px;padding:8px}
+    .footer{margin-top:18px;color:var(--muted);font-size:12px}
+    .hidden{display:none}
+    .chart-box{position:relative;height:320px}
+    .pill{display:inline-block;padding:4px 8px;border-radius:999px;font-size:11px;border:1px solid var(--border);color:var(--muted)}
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <div class="brand"><div class="badge">💸</div><div class="title">Money Manager</div></div>
+      <div class="muted" id="today"></div>
+    </div>
+
+    <div class="tabs" role="tablist">
+      <button class="tab active" data-tab="dashboard">Dashboard</button>
+      <button class="tab" data-tab="income">Income</button>
+      <button class="tab" data-tab="expenses">Expenses</button>
+      <button class="tab" data-tab="loans">Loans</button>
+    </div>
+
+    <section id="dashboard" class="section" style="margin-top:16px">
+      <div class="grid grid-3">
+        <div class="card">
+          <div class="card-header"><h3>Income (This Month)</h3><span class="pill" id="monthTag"></span></div>
+          <div class="card-content">
+            <div class="kv"><div>Bank Pay</div><div class="value" id="incomeBank">$0.00</div></div>
+            <div class="kv"><div>Cash Tips</div><div class="value" id="incomeTips">$0.00</div></div>
+            <div class="kv"><div>Total</div><div class="value" id="incomeTotal">$0.00</div></div>
+            <div class="grid" style="gap:10px;margin-top:10px">
+              <div class="chip">
+                <span>Add Bank Pay</span>
+                <input type="number" step="0.01" id="quickBank" placeholder="Amount">
+                <button id="quickBankBtn">Add</button>
+              </div>
+              <div class="chip">
+                <span>Add Cash Tip</span>
+                <input type="number" step="0.01" id="quickTip" placeholder="Amount">
+                <button id="quickTipBtn">Add</button>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-header"><h3>Expenses (This Month)</h3></div>
+          <div class="card-content">
+            <div class="kv"><div>Total</div><div class="value" id="expensesTotal">$0.00</div></div>
+            <div class="chip" style="margin-top:10px">
+              <span>Add Expense</span>
+              <select id="quickCat"></select>
+              <input type="number" step="0.01" id="quickExp" placeholder="Amount">
+              <button id="quickExpBtn">Add</button>
+            </div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-header"><h3>Net (Income − Expenses)</h3></div>
+          <div class="card-content">
+            <div class="kv"><div></div><div class="value" id="net">$0.00</div></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="grid grid-2" style="margin-top:14px">
+        <div class="card">
+          <div class="card-header"><h3>Where Your Money Went (This Month)</h3></div>
+          <div class="card-content">
+            <div id="noDataMsg" class="muted">No expenses yet this month. Add some below.</div>
+            <div class="chart-box"><canvas id="pieChart"></canvas></div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-header"><h3>Loans – Outstanding by Friend</h3></div>
+          <div class="card-content">
+            <div id="loansList" class="grid" style="gap:10px"></div>
+            <div class="chip" style="margin-top:10px">
+              <span>Quick Loan</span>
+              <input type="text" id="quickFriend" placeholder="Friend">
+              <select id="quickType"><option>Lend</option><option>Repay</option></select>
+              <input type="number" step="0.01" id="quickLoanAmt" placeholder="Amount">
+              <button id="quickLoanBtn">Add</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="income" class="section hidden" style="margin-top:16px">
+      <div class="card">
+        <div class="card-header">
+          <h3>Income</h3>
+          <button class="btn" id="addIncome">Add Row</button>
+        </div>
+        <div class="card-content">
+          <div class="table-wrap">
+            <table class="table" id="incomeTable">
+              <thead><tr><th>Date</th><th>Source</th><th>Amount</th><th>Notes</th><th></th></tr></thead>
+              <tbody></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="expenses" class="section hidden" style="margin-top:16px">
+      <div class="card">
+        <div class="card-header">
+          <h3>Expenses</h3>
+          <button class="btn" id="addExpense">Add Row</button>
+        </div>
+        <div class="card-content">
+          <div class="table-wrap">
+            <table class="table" id="expensesTable">
+              <thead><tr><th>Date</th><th>Category</</th><th>Amount</th><th>Method</th><th>Notes</th><th></th></tr></thead>
+              <tbody></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="loans" class="section hidden" style="margin-top:16px">
+      <div class="card">
+        <div class="card-header">
+          <h3>Loans</h3>
+          <button class="btn" id="addLoan">Add Row</button>
+        </div>
+        <div class="card-content">
+          <div class="table-wrap">
+            <table class="table" id="loansTable">
+              <thead><tr><th>Date</th><th>Friend</th><th>Type</th><th>Amount</th><th>Notes</th><th></th></tr></thead>
+              <tbody></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <div class="footer">• Data is stored locally in your browser. • Add rows anytime; dashboard & chart update instantly based on the current month.</div>
+  </div>
+
+  <script>
+    const fmt = new Intl.NumberFormat(undefined,{style:"currency",currency:"CAD"});
+    const todayEl = document.getElementById("today");
+    const monthTag = document.getElementById("monthTag");
+    const monthKey = () => new Date().toISOString().slice(0,7);
+    const todayStr = () => new Date().toISOString().slice(0,10);
+
+    const sources=["Bank Pay","Cash Tip","Other Income"]; const methods=["Credit Card","Debit","Cash","E-Transfer"]; const categories=["Credit Card Bill","Rent","Groceries","Dining Out","Transport","Phone/Internet","School","Health","Entertainment","Clothing","Misc"];
+
+    let income = JSON.parse(localStorage.getItem("income")||"[]");
+    let expenses = JSON.parse(localStorage.getItem("expenses")||"[]");
+    let loans = JSON.parse(localStorage.getItem("loans")||"[]");
+
+    function saveAll(){localStorage.setItem("income",JSON.stringify(income));localStorage.setItem("expenses",JSON.stringify(expenses));localStorage.setItem("loans",JSON.stringify(loans));updateDashboard();renderLoansList()}
+
+    function addIncomeRow(){income.push({date:todayStr(),source:sources[0],amount:0,notes:""});renderTables();saveAll()}
+    function addExpenseRow(){expenses.push({date:todayStr(),category:categories[0],amount:0,method:methods[0],notes:""});renderTables();saveAll()}
+    function addLoanRow(){loans.push({date:todayStr(),friend:"",type:"Lend",amount:0,notes:""});renderTables();saveAll()}
+
+    function selOpts(arr,val){return arr.map(v=>`<option ${v===val?"selected":""}>${v}</option>`).join("")}
+
+    function renderTables(){
+      const it=document.querySelector('#incomeTable tbody');
+      it.innerHTML=income.map((r,i)=>`<tr><td><input type=date value="${r.date||''}" onchange="income[${i}].date=this.value;saveAll()"></td><td><select onchange="income[${i}].source=this.value;saveAll()">${selOpts(sources,r.source)}</select></td><td><input type=number step=0.01 value="${Number(r.amount||0)}" onchange="income[${i}].amount=parseFloat(this.value)||0;saveAll()"></td><td><input value="${r.notes||''}" onchange="income[${i}].notes=this.value;saveAll()"></td><td style="text-align:right"><button class="btn btn-ghost" onclick="income.splice(${i},1);renderTables();saveAll()">Delete</button></td></tr>`).join('');
+
+      const et=document.querySelector('#expensesTable tbody');
+      et.innerHTML=expenses.map((r,i)=>`<tr><td><input type=date value="${r.date||''}" onchange="expenses[${i}].date=this.value;saveAll()"></td><td><select onchange="expenses[${i}].category=this.value;saveAll()">${selOpts(categories,r.category)}</select></td><td><input type=number step=0.01 value="${Number(r.amount||0)}" onchange="expenses[${i}].amount=parseFloat(this.value)||0;saveAll()"></td><td><select onchange="expenses[${i}].method=this.value;saveAll()">${selOpts(methods,r.method)}</select></td><td><input value="${r.notes||''}" onchange="expenses[${i}].notes=this.value;saveAll()"></td><td style="text-align:right"><button class="btn btn-ghost" onclick="expenses.splice(${i},1);renderTables();saveAll()">Delete</button></td></tr>`).join('');
+
+      const lt=document.querySelector('#loansTable tbody');
+      lt.innerHTML=loans.map((r,i)=>`<tr><td><input type=date value="${r.date||''}" onchange="loans[${i}].date=this.value;saveAll()"></td><td><input value="${r.friend||''}" onchange="loans[${i}].friend=this.value;saveAll()"></td><td><select onchange="loans[${i}].type=this.value;saveAll()"><option ${r.type==='Lend'?"selected":""}>Lend</option><option ${r.type==='Repay'?"selected":""}>Repay</option></select></td><td><input type=number step=0.01 value="${Number(r.amount||0)}" onchange="loans[${i}].amount=parseFloat(this.value)||0;saveAll()"></td><td><input value="${r.notes||''}" onchange="loans[${i}].notes=this.value;saveAll()"></td><td style="text-align:right"><button class="btn btn-ghost" onclick="loans.splice(${i},1);renderTables();saveAll()">Delete</button></td></tr>`).join('');
+    }
+
+    let chart; const ctx=()=>document.getElementById('pieChart').getContext('2d');
+    function updateDashboard(){
+      const mk=monthKey(); monthTag.textContent=mk; document.getElementById('today').textContent=new Date().toLocaleDateString();
+      const mi=income.filter(r=>r.date&&r.date.startsWith(mk)); const me=expenses.filter(r=>r.date&&r.date.startsWith(mk));
+      const bank=mi.filter(r=>r.source==='Bank Pay').reduce((s,r)=>s+Number(r.amount||0),0);
+      const tips=mi.filter(r=>r.source==='Cash Tip').reduce((s,r)=>s+Number(r.amount||0),0);
+      const other=mi.filter(r=>r.source!=='Bank Pay'&&r.source!=='Cash Tip').reduce((s,r)=>s+Number(r.amount||0),0);
+      const incTotal=bank+tips+other; const expTotal=me.reduce((s,r)=>s+Number(r.amount||0),0);
+      document.getElementById('incomeBank').textContent=fmt.format(bank);
+      document.getElementById('incomeTips').textContent=fmt.format(tips);
+      document.getElementById('incomeTotal').textContent=fmt.format(incTotal);
+      document.getElementById('expensesTotal').textContent=fmt.format(expTotal);
+      const netEl=document.getElementById('net'); netEl.textContent=fmt.format(incTotal-expTotal); netEl.classList.toggle('good',incTotal-expTotal>=0); netEl.classList.toggle('bad',incTotal-expTotal<0);
+      const catMap=new Map(categories.map(c=>[c,0])); for(const e of me){catMap.set(e.category,(catMap.get(e.category)||0)+Number(e.amount||0))}
+      const entries=[...catMap.entries()].filter(([,v])=>v>0);
+      document.getElementById('noDataMsg').style.display=entries.length?'none':'block';
+      const labels=entries.map(([c])=>c); const values=entries.map(([,v])=>v);
+      const colors=[getComputedStyle(document.documentElement).getPropertyValue('--chip1').trim(),getComputedStyle(document.documentElement).getPropertyValue('--chip2').trim(),getComputedStyle(document.documentElement).getPropertyValue('--chip3').trim(),getComputedStyle(document.documentElement).getPropertyValue('--chip4').trim(),getComputedStyle(document.documentElement).getPropertyValue('--chip5').trim(),getComputedStyle(document.documentElement).getPropertyValue('--chip6').trim(),getComputedStyle(document.documentElement).getPropertyValue('--chip7').trim(),getComputedStyle(document.documentElement).getPropertyValue('--chip8').trim(),getComputedStyle(document.documentElement).getPropertyValue('--chip9').trim(),getComputedStyle(document.documentElement).getPropertyValue('--chip10').trim(),getComputedStyle(document.documentElement).getPropertyValue('--chip11').trim()];
+      if(chart) chart.destroy(); chart=new Chart(ctx(),{type:'doughnut',data:{labels,datasets:[{data:values,backgroundColor:colors.slice(0,labels.length)}]},options:{plugins:{legend:{position:'bottom'}},maintainAspectRatio:false}});
+    }
+
+    function renderLoansList(){
+      const m=new Map(); for(const r of loans){const s=m.get(r.friend)||0; m.set(r.friend,s+(r.type==='Lend'?Number(r.amount||0):-Number(r.amount||0)))}
+      const list=document.getElementById('loansList'); list.innerHTML='';
+      [...m.entries()].sort((a,b)=>a[0].localeCompare(b[0])).forEach(([f,bal])=>{
+        const row=document.createElement('div'); row.className='kv';
+        const name=document.createElement('div'); name.textContent=f||'(Unnamed)';
+        const val=document.createElement('div'); val.className='value '+(bal>=0?'bad':'good'); val.textContent=fmt.format(bal);
+        row.appendChild(name); row.appendChild(val); list.appendChild(row);
+      })
+    }
+
+    document.getElementById('addIncome').addEventListener('click',addIncomeRow);
+    document.getElementById('addExpense').addEventListener('click',addExpenseRow);
+    document.getElementById('addLoan').addEventListener('click',addLoanRow);
+
+    document.getElementById('quickCat').innerHTML=categories.map(c=>`<option>${c}</option>`).join('');
+    document.getElementById('quickBankBtn').addEventListener('click',()=>{const v=parseFloat(document.getElementById('quickBank').value)||0;if(v>0){income.push({date:todayStr(),source:'Bank Pay',amount:v,notes:''});document.getElementById('quickBank').value='';persistUI()}});
+    document.getElementById('quickTipBtn').addEventListener('click',()=>{const v=parseFloat(document.getElementById('quickTip').value)||0;if(v>0){income.push({date:todayStr(),source:'Cash Tip',amount:v,notes:''});document.getElementById('quickTip').value='';persistUI()}});
+    document.getElementById('quickExpBtn').addEventListener('click',()=>{const v=parseFloat(document.getElementById('quickExp').value)||0;const cat=document.getElementById('quickCat').value;if(v>0){expenses.push({date:todayStr(),category:cat,amount:v,method:'Debit',notes:''});document.getElementById('quickExp').value='';persistUI()}});
+
+    document.getElementById('quickLoanBtn').addEventListener('click',()=>{const f=document.getElementById('quickFriend').value.trim();const t=document.getElementById('quickType').value;const a=parseFloat(document.getElementById('quickLoanAmt').value)||0;if(f && a>0){loans.push({date:todayStr(),friend:f,type:t,amount:a,notes:''});document.getElementById('quickFriend').value='';document.getElementById('quickLoanAmt').value='';persistUI()}});
+
+    function persistUI(){renderTables();saveAll();updateDashboard();renderLoansList()}
+
+    document.querySelectorAll('.tabs .tab').forEach(btn=>btn.addEventListener('click',()=>{document.querySelectorAll('.tabs .tab').forEach(b=>b.classList.remove('active'));btn.classList.add('active');document.querySelectorAll('.section').forEach(s=>s.classList.add('hidden'));document.getElementById(btn.dataset.tab).classList.remove('hidden')}));
+
+    if(income.length===0){income.push({date:todayStr(),source:'Bank Pay',amount:0,notes:''})}
+    if(expenses.length===0){expenses.push({date:todayStr(),category:categories[0],amount:0,method:methods[0],notes:''})}
+
+    renderTables(); updateDashboard(); renderLoansList(); document.getElementById('today').textContent=new Date().toLocaleDateString();
+  </script>
+</body>
+</html>
