@@ -1,0 +1,140 @@
+:root {
+  --bg: #ffffff;
+  --card: #f8f9ff;
+  --text: #1f2937;
+  --muted: #5b6475;
+
+  /* Vibrant light palette */
+  --primary: #6a5cff;   /* periwinkle */
+  --accent: #ff7a59;    /* coral */
+  --accent-2: #22c55e;  /* emerald */
+  --warn: #ef4444;      /* red */
+
+  --border: #e5e7eb;
+  --shadow: 0 10px 20px rgba(31, 41, 55, 0.08);
+}
+
+html[data-theme="dark"] {
+  --bg: #0f1220;
+  --card: #171a2b;
+  --text: #e6e8ef;
+  --muted: #96a0b8;
+
+  /* Muted dark variants */
+  --primary: #a396ff;
+  --accent: #ffa489;
+  --accent-2: #4ade80;
+  --warn: #f87171;
+
+  --border: #2a2f45;
+  --shadow: 0 10px 20px rgba(0, 0, 0, 0.35);
+}
+
+* { box-sizing: border-box; }
+html, body { height: 100%; }
+body {
+  margin: 0;
+  font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial, "Apple Color Emoji", "Segoe UI Emoji";
+  background: radial-gradient(1200px 800px at 20% -10%, rgba(106,92,255,0.08), transparent 60%),
+              radial-gradient(900px 700px at 120% 20%, rgba(255,122,89,0.08), transparent 60%),
+              var(--bg);
+  color: var(--text);
+}
+
+/* Navbar */
+.navbar {
+  position: sticky; top: 0; z-index: 20;
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 12px 18px;
+  background: rgba(255,255,255,0.6);
+  backdrop-filter: blur(8px);
+  border-bottom: 1px solid var(--border);
+}
+html[data-theme="dark"] .navbar {
+  background: rgba(17,18,30,0.45);
+}
+.brand { display: flex; align-items: center; gap: 10px; font-weight: 700; }
+.logo { font-size: 20px; }
+.title { letter-spacing: 0.3px; }
+
+/* Buttons */
+.btn {
+  border: none;
+  padding: 10px 14px;
+  border-radius: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: transform .04s ease, box-shadow .2s ease, background .2s ease;
+  box-shadow: var(--shadow);
+}
+.btn:hover { transform: translateY(-1px); }
+.btn:active { transform: translateY(0); }
+
+.btn.primary { background: linear-gradient(135deg, var(--primary), var(--accent)); color: #fff; }
+.btn.outline { background: transparent; border: 1px solid var(--border); color: var(--text); }
+.btn.danger { background: linear-gradient(135deg, #f43f5e, var(--warn)); color: #fff; }
+
+/* Layout */
+.container {
+  max-width: 1100px; margin: 24px auto; padding: 0 16px;
+  display: grid; gap: 24px;
+}
+.card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  box-shadow: var(--shadow);
+  padding: 18px;
+}
+.card h2 { margin: 0 0 14px; }
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 14px;
+}
+.field { display: flex; flex-direction: column; gap: 6px; }
+.field.full { grid-column: 1 / -1; }
+label { font-size: 0.9rem; color: var(--muted); }
+input {
+  background: #fff0; color: var(--text);
+  border: 1px solid var(--border);
+  border-radius: 12px; padding: 10px 12px;
+  outline: none;
+}
+input:focus { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(106,92,255,0.15); }
+.hint { color: var(--muted); font-size: 12px; }
+
+/* Summary */
+.summary {
+  display: grid; grid-template-columns: 1.1fr 1fr; gap: 16px; align-items: center;
+}
+.stat { display: flex; justify-content: space-between; padding: 10px 12px; background: rgba(0,0,0,0.03); border-radius: 12px; margin-bottom: 8px; }
+.label { color: var(--muted); }
+.value { font-weight: 800; }
+
+/* Table */
+.tableWrap { overflow-x: auto; }
+table { width: 100%; border-collapse: collapse; }
+thead th {
+  text-align: left; font-weight: 700; color: var(--muted); padding: 10px 8px; border-bottom: 1px solid var(--border);
+}
+tbody td {
+  padding: 12px 8px; border-bottom: 1px solid var(--border);
+  vertical-align: middle;
+}
+.rowActions { display: flex; gap: 8px; }
+.action {
+  background: transparent; border: 1px solid var(--border); color: var(--text);
+  padding: 6px 10px; border-radius: 10px; cursor: pointer;
+}
+.action:hover { border-color: var(--accent); }
+
+/* Footer */
+.footer { text-align: center; padding: 24px; color: var(--muted); }
+
+/* Responsive */
+@media (max-width: 860px) {
+  .grid { grid-template-columns: repeat(2, 1fr); }
+  .summary { grid-template-columns: 1fr; }
+}
